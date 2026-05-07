@@ -1,0 +1,48 @@
+//--------------------------------------------------------------------------------------------------
+// api/build.gradle — Javalin REST wrapper around the Audiveris OMR engine
+//--------------------------------------------------------------------------------------------------
+
+plugins {
+    id 'application'
+}
+
+java {
+    sourceCompatibility = JavaLanguageVersion.of(project.property('theMinJavaVersion'))
+}
+
+repositories {
+    mavenCentral()
+
+    // Required to resolve javax.media:jai-core (transitive dep from :app)
+    maven {
+        name = 'JBoss repository'
+        url = 'https://repository.jboss.org/maven2'
+    }
+}
+
+dependencies {
+    implementation project(':app')
+    implementation 'io.javalin:javalin:6.4.0'
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.18.2'
+    // args4j is needed at compile time because CLI.parseParameters() declares throws CmdLineException
+    implementation 'args4j:args4j:2.33'
+}
+
+application {
+    mainClass = 'org.audiveris.api.AudiverisApiServer'
+
+    applicationDefaultJvmArgs = [
+        '--add-exports=java.desktop/sun.awt.image=ALL-UNNAMED',
+        '--enable-native-access=ALL-UNNAMED',
+        '-Djava.awt.headless=true'
+    ]
+}
+
+tasks.run {
+    minHeapSize = '512m'
+    maxHeapSize = '8g'
+
+    if (project.hasProperty('jvmLineArgs')) {
+        jvmArgs jvmLineArgs.split(',')
+    }
+}
