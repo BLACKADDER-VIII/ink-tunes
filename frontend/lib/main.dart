@@ -59,10 +59,24 @@ class _HomePageState extends State<HomePage> {
   }
 
   String? _detectBackendDir() {
-    Directory d = Directory.current;
-    for (int i = 0; i < 8; i++) {
+    // Search both cwd (works under `flutter run`) and the resolved executable
+    // directory (works when launching the .app bundle, where cwd is `/`).
+    final roots = <String>{
+      Directory.current.path,
+      File(Platform.resolvedExecutable).parent.path,
+    };
+    for (final root in roots) {
+      final hit = _walkUpForBackend(Directory(root));
+      if (hit != null) return hit;
+    }
+    return null;
+  }
+
+  String? _walkUpForBackend(Directory start) {
+    final wrapper = Platform.isWindows ? 'gradlew.bat' : 'gradlew';
+    Directory d = start;
+    for (int i = 0; i < 15; i++) {
       final candidate = Directory(p.join(d.path, 'audiveris_backend'));
-      final wrapper = Platform.isWindows ? 'gradlew.bat' : 'gradlew';
       if (candidate.existsSync() &&
           File(p.join(candidate.path, wrapper)).existsSync()) {
         return candidate.path;
