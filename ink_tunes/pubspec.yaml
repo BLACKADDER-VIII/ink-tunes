@@ -9,6 +9,9 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  file_picker: ^8.1.2
+  http: ^1.2.2
+  path: ^1.9.0
 
 dev_dependencies:
   flutter_test:
